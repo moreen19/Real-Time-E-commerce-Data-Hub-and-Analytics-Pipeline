@@ -1,0 +1,56 @@
+name: DataOps Continuous Integration
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  # Job 1: Check Terraform
+  terraform_validation:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.5.0" # Matches your local version
+
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Terraform Validate
+        run: terraform validate
+
+  # Job 2: Check dbt (runs only if Terraform is valid)
+  dbt_validation:
+    needs: terraform_validation
+    runs-on: ubuntu-latest
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_DEFAULT_REGION: ${{ vars.AWS_REGION }} # Pulling from GitHub Variables
+      
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.9'
+
+      - name: Install Dependencies
+        run: |
+          pip install dbt-core==1.5.3
+          pip install dbt-spark[pyspark]==1.5.3
+
+      - name: dbt Debug
+        # Points to your existing folder structure
+        run: dbt debug --project-dir ./dbt/ecommerce_analytics --profiles-dir .
+
+      - name: dbt Compile
+        run: dbt compile --project-dir ./dbt/ecommerce_analytics --profiles-dir .
