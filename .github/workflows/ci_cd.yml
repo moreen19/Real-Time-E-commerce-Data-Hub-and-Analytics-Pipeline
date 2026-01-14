@@ -43,10 +43,13 @@ jobs:
         with:
           python-version: '3.9'
 
-      - name: Install Dependencies
+
+      - name: Install dbt and Spark Dependencies
         run: |
-          pip install dbt-core==1.5.3
-          pip install dbt-spark[pyspark]==1.5.3
+          python -m pip install --upgrade pip
+          # Use quotes around the package name to handle the square brackets in bash
+          pip install "dbt-core==1.5.3" "dbt-spark[PyHive]==1.5.3"
+          
 
       - name: dbt debug
         run: |
