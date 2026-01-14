@@ -53,5 +53,8 @@ jobs:
 
       - name: dbt Parse (Validation Only)
         run: |
+          # Move into the project root where dbt_project.yml is
           cd pipeline/dbt/ecommerce_analytics
-          dbt parse --profiles-dir .           
+          
+          # Tell dbt to look inside the 'profiles' subfolder for profiles.yml
+          dbt parse --profiles-dir profiles  
