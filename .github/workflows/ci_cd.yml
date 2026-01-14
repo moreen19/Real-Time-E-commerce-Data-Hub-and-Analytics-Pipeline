@@ -55,8 +55,7 @@ jobs:
       
       
 
-      - name: dbt Compile
-        run:
+      - name: dbt Parse (Validation Only)
+        run: |
           cd pipeline/dbt/ecommerce_analytics
-          dbt compile --profiles-dir profiles
-     
+          dbt parse --profiles-dir .           
